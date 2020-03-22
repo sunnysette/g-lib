@@ -8,13 +8,15 @@ import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Alert from '@material-ui/lab/Alert';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const Login = () => {
 	const [loginFields, setLoginFields] = useState({
 		email: {value: '', valid: true},
-		password: {password: '', valid: true},
-		authenticationFailure: false
+		password: {password: '', valid: true}
 	});
+	const [authError, setAuthError] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const formRef = useRef(null);
 	const firebase = useContext(FirebaseContext);
 	
@@ -29,6 +31,8 @@ const Login = () => {
 
 	const doLogin = useCallback((e) => {
 		e.preventDefault();
+		setAuthError(false);
+		setLoading(true);
 		let newLoginFields = {...loginFields};
 		if (!newLoginFields.email.value || newLoginFields.email.value === '') {
 			newLoginFields.email.valid = false;
@@ -43,13 +47,12 @@ const Login = () => {
 				newLoginFields.password.value
 			)
 				.catch(() => {
-					setLoginFields({
-						...newLoginFields,
-						authenticationFailure: true
-					});
+					setAuthError(true);
+					setLoading(false);
 				});
 		} else {
 			setLoginFields(newLoginFields);
+			setLoading(false);
 		}
 
 		return false;
@@ -72,7 +75,7 @@ const Login = () => {
 			}}
 		>
 			<Box p={2}>
-				<Typography align="center" variant="h2" component="h1" gutterBottom>
+				<Typography align="center" variant="h4" component="h1" gutterBottom>
 					Singh Sabha Library
       			</Typography>
 				<Paper>
@@ -85,10 +88,16 @@ const Login = () => {
 								<TextField type="password" name="password" label="Password" onChange={handleChange} error={!loginFields.password.valid} />
 							</FormControl>
 							<Box mt={2} mb={2}>
-								<Button fullWidth={true} variant="contained" color="primary" type="submit">Login</Button>
+								<Button fullWidth={true} variant="contained" color="primary" type="submit">
+								{ loading ?
+									<CircularProgress size={25} color="inherit" />
+									:
+									<Typography>Login</Typography>
+								}
+								</Button>
 							</Box>
 						</form>
-						{ loginFields.authenticationFailure && (
+						{ authError && (
 							<Box mt={2}>
 								<Alert severity="error">Authentication failed!</Alert>
 							</Box>

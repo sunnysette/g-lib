@@ -1,24 +1,37 @@
-import React, { useEffect, useContext } from 'react';
-import { FirebaseContext } from '../../context/Firebase';
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
+
+import Box from '@material-ui/core/Box';
+import Container from '@material-ui/core/Container';
+import Fab from '@material-ui/core/Fab';
+
+import AddIcon from '@material-ui/icons/Add';
+
+import BookContext from '../../context/Book/BookContext';
+import BookView from './components/BookItem';
 
 const BooksView = () => {
-	const firebase = useContext(FirebaseContext);
-
-	useEffect(() => {
-		let mounted = true;
-		firebase.db.collection('books').get()
-			.then(function(querySnapshot) {
-				if (mounted) {
-					querySnapshot.forEach(function(doc) {
-						console.log("dashboard", doc.id, " => ", doc.data());
-					});
-				}
-			});
-		return () => { mounted = false; };
-	});
+	const bookStore = useContext(BookContext);
 
 	return (
-		<p>This is the Books</p>
+		<Container>
+			<Box p={4} display="flex" flexWrap="wrap">
+				{ Object.keys(bookStore.books).map((key) => <BookView key={key} id={key} book={bookStore.books[key]} />)}
+			</Box>
+			<Fab 
+				to="/books/new/"
+				color="primary"
+				aria-label="add"
+				component={Link}
+				style={{
+					position: 'fixed',
+					right: '40px',
+					bottom: '40px'
+				}}
+			>
+  				<AddIcon />
+			</Fab>
+		</Container>
 	);
 };
 
