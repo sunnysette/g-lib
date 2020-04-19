@@ -8,7 +8,7 @@ import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 
 import BookContext from '../../context/Book/BookContext';
-import BookView from './components/BookItem';
+import BookItem from './components/BookItem';
 
 const BooksView = () => {
 	const bookStore = useContext(BookContext);
@@ -16,7 +16,7 @@ const BooksView = () => {
 	return (
 		<Container>
 			<Box p={4} display="flex" flexWrap="wrap">
-				{ Object.keys(bookStore.books).map((key) => <BookView key={key} id={key} book={bookStore.books[key]} />)}
+				{ Object.keys(bookStore.books).map((key) => <BookItem key={key} id={key} book={bookStore.books[key]} />)}
 			</Box>
 			<Fab 
 				to="/books/new/"

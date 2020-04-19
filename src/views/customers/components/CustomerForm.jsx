@@ -13,45 +13,47 @@ import CloseIcon from '@material-ui/icons/Close';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
-const BookForm = ({ create, bookId, book, goBack }) => {
-	const [formBook, setBook] = useState(create ? {
-		title: '',
-		author: '',
-		copies: 1,
-		picture: ''
-	} : book);
+const CustomerForm = ({ create, customerId, customer, goBack }) => {
+	const [formCustomer, setCustomer] = useState(create ? {
+		firstname: '',
+		lastname: '',
+		address: '',
+		email: '',
+		deposit: 0,
+		registration_date: new Date()
+	} : customer);
 	const [openModSnackbar, setModSnackbar] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const firebase = useContext(FirebaseContext);
 	const formRef = useRef(null);
 
-	const getBookDiffs = useCallback(() => {
-		return reduce(formBook, (diffs, value, key) => {
-			if (book[key] !== value) {
+	const getCustomerDiffs = useCallback(() => {
+		return reduce(formCustomer, (diffs, value, key) => {
+			if (customer[key] !== value) {
 				diffs[key] = value;
 			}
 			return diffs;
 		}, {});
-	}, [formBook, book]);
+	}, [formCustomer, customer]);
 
 	const modSnackbarUpdate = useCallback(() => {
-		setBook(book);
+		setCustomer(customer);
 		setModSnackbar(false);
-	}, [book]);
+	}, [customer]);
 
-	const saveBook = useCallback((e) => {
+	const saveCustomer = useCallback((e) => {
 		e.preventDefault();
 		if (create) {
-			firebase.db.collection('books').doc().set(formBook)
+			firebase.db.collection('customers').doc().set(formCustomer)
 				.then(() => {
 					goBack();
 				});
 		}
 		else {
-			const bookDiffs = getBookDiffs();
-			if (!isEmpty(bookDiffs)) {
+			const customerDiffs = getCustomerDiffs();
+			if (!isEmpty(customerDiffs)) {
 				setSaving(true);
-				firebase.db.collection('books').doc(bookId).update(formBook)
+				firebase.db.collection('customers').doc(customerId).update(formCustomer)
 					.then(() => {
 						goBack();
 					});
@@ -61,27 +63,27 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 			}
 		}
 		return false;
-	}, [create, bookId, goBack, formBook, getBookDiffs, firebase]);
+	}, [create, customerId, goBack, formCustomer, getCustomerDiffs, firebase]);
 
 	useEffect(() => {
 		if (!create) {
-			if (typeof formBook === 'undefined'){
-				setBook(book);
+			if (typeof formCustomer === 'undefined'){
+				setCustomer(customer);
 			}
 			else {
-				const bookDiffs = getBookDiffs();
-				if (!isEmpty(bookDiffs) && !saving) {
+				const customerDiffs = getCustomerDiffs();
+				if (!isEmpty(customerDiffs) && !saving) {
 					setModSnackbar(true);
 				}
 			}
 		}
-	}, [book, saving, formBook, create, getBookDiffs]);
+	}, [customer, saving, formCustomer, create, getCustomerDiffs]);
 
 	const modSnackbarClose = () => setModSnackbar(false);
 
 	const handleChange = (event) => {
-		setBook({
-			...formBook,
+		setCustomer({
+			...formCustomer,
 			[event.target.name]: event.target.value
 		});
 	};
@@ -100,7 +102,7 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 					variant="contained"
 					color="secondary"
 					disableElevation={true}
-					onClick={saveBook}
+					onClick={saveCustomer}
 				>Save</Button>
 			</>
 		);
@@ -119,28 +121,28 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 					variant="contained"
 					color="secondary"
 					disableElevation={true}
-					onClick={saveBook}
+					onClick={saveCustomer}
 				>Save</Button>
 			</>
 		);
 	}
 
-	if (typeof formBook === 'undefined') return null;
+	if (typeof formCustomer === 'undefined') return null;
 	return (
 		<>
 			<DrawerHeader onBack={goBack}>{ headerActions }</DrawerHeader>
 			<form ref={formRef}>
 				<FormControl fullWidth={true} margin="dense">
-					<TextField value={formBook.id} type="number" name="id" label="Internal ID" onChange={handleChange} />
+					<TextField value={formCustomer.id} type="number" name="id" label="Card number" onChange={handleChange} />
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
-					<TextField value={formBook.title} type="text" name="title" label="Title" onChange={handleChange} />
+					<TextField value={formCustomer.firstname} type="text" name="firstname" label="First name" onChange={handleChange} />
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
-					<TextField value={formBook.author} type="text" name="author" label="Author" onChange={handleChange} />
+					<TextField value={formCustomer.lastname} type="text" name="lastname" label="Last name" onChange={handleChange} />
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
-					<TextField value={formBook.copies} type="number" name="copies" label="Copies" onChange={handleChange} />
+					<TextField value={formCustomer.email} type="email" name="email" label="Email" onChange={handleChange} />
 				</FormControl>
 			</form>
 			<Snackbar
@@ -151,18 +153,18 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 				open={openModSnackbar}
 				autoHideDuration={6000}
 				onClose={modSnackbarClose}
-				message="This book has changed. Update the view to see the changes."
+				message="This customer has changed. Update the view to see the changes."
 				action={
-					<React.Fragment>
+					<>
 						<Button color="secondary" size="small" onClick={modSnackbarUpdate}>Update</Button>
 						<IconButton size="small" aria-label="close" color="inherit" onClick={modSnackbarClose}>
 							<CloseIcon fontSize="small" />
 						</IconButton>
-					</React.Fragment>
+					</>
 				}
 			/>
 		</>
 	);
 }
 
-export default BookForm;
+export default CustomerForm;

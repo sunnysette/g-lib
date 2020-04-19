@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
-import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -31,20 +30,20 @@ const GridEl = styled(Grid)`
 		font-size: 30px;
 	}
 `;
-const BookPreview = ({ bookId, book, goBack }) => {
+const CustomerPreview = ({ customerId, customer, goBack }) => {
 	const firebase = useContext(FirebaseContext);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const handleDelete = useCallback(() => {
-		firebase.db.collection('books').doc(bookId).delete()
+		firebase.db.collection('customers').doc(customerId).delete()
 			.then(() => {
 				goBack();
 			});
-	}, [bookId, goBack]);
+	}, [customerId, goBack]);
 	const handleDeleteDialogOpen = useCallback(() => setDeleteDialogOpen(true), []);
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);
 
-	if (typeof book === 'undefined') return null;
+	if (typeof customer === 'undefined') return null;
 	return (
 		<>
 			<DrawerHeader onBack={goBack}>
@@ -57,7 +56,7 @@ const BookPreview = ({ bookId, book, goBack }) => {
 				<Button
 					variant="contained"
 					color="primary"
-					to={`/books/edit/${bookId}`}
+					to={`/customers/edit/${customerId}`}
 					component={RouterLink}
 					disableElevation={true}
 					startIcon={<EditIcon fontSize="small" />}
@@ -65,25 +64,16 @@ const BookPreview = ({ bookId, book, goBack }) => {
 			</DrawerHeader>
 			<GridEl container spacing={2}>
 				<Grid item xs={4}>
-					<img src={ book.picture ? book.picture : `https://picsum.photos/200/300?random=${bookId}` } />
+					<img src={ customer.picture ? customer.picture : `https://picsum.photos/200/300?random=${customerId}` } />
 				</Grid>
 				<Grid item xs={8}>
-					<p className="book-author">{ book.author }</p>
-					<h2 className="book-title">{ book.title }</h2>
-					<Box display="flex">
-						<Box mr={1}>
-							<Chip className="book-copies" label={ "Copies: " + book.copies } />
-						</Box>
-						<Box mr={1}>
-							<Chip className="book-id" label={ "Internal ID: " + book.id } />
-						</Box>
-					</Box>
+					<h2 className="customer-name">{ customer.firstname } { customer.lastname }</h2>
 				</Grid>
 			</GridEl>
 			<Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
-				<DialogTitle>Delete this book?</DialogTitle>
+				<DialogTitle>Delete this customer?</DialogTitle>
 				<DialogContent>
-					<DialogContentText>Are you sure about deleting this book? This action can't be reverted.</DialogContentText>
+					<DialogContentText>Are you sure about deleting this customer? This action can't be reverted.</DialogContentText>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleDeleteDialogClose} color="primary">Cancel</Button>
@@ -94,4 +84,4 @@ const BookPreview = ({ bookId, book, goBack }) => {
 	);
 }
 
-export default BookPreview;
+export default CustomerPreview;
