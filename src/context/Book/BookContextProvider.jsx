@@ -1,18 +1,21 @@
 import React, { useEffect, useContext, useReducer } from 'react';
+import { isEmpty } from 'lodash';
 
 import { FirebaseContext } from '../Firebase';
 import BookContext from './BookContext';
 
 function booksReducer(state, action) {
 	switch (action.type) {
-		case 'push':
-			return { ...state, [action.id]: action.book };
-		case 'pop':
-			const newState = {...state};
-			delete newState[action.id];
-			return newState;
-		case 'update':
-			return { ...state, [action.id]: action.book };
+		case 'bulkPush':
+			return { ...state, ...action.books.reduce((books, book, key) => ({ ...books, [book.id]: book.book }), {}) };
+		case 'bulkPops':
+			const newBulkState = {...state};
+			action.books.forEach((id) => {
+				delete newBulkState[id];
+			});
+			return newBulkState;
+		case 'bulkUpdates':
+			return { ...state, ...action.books.reduce((books, book, key) => ({...books, [book.id]: book.book }), {}) };
 		default:
 			throw new Error();
 	}
@@ -25,29 +28,40 @@ function BookContextProvider({ children }) {
 	useEffect(() => {
 		let mounted = true;
 		firebase.db.collection('books')
+			.orderBy('id', 'asc')
 			.onSnapshot((snapshot) => {
 				if (mounted) {
+					const bulkPushes = [];
+					const bulkPops = [];
+					const bulkUpdates = [];
 					snapshot.docChanges().forEach(function(change) {
 						switch (change.type) {
 							case 'added':
-								dispatchBooks({ type: 'push', id: change.doc.id, book: change.doc.data() });
+								bulkPushes.push({ id: change.doc.id, book: change.doc.data() });
 								break;
 							case 'removed':
-								dispatchBooks({ type: 'pop', id: change.doc.id });
+								bulkPops.push(change.doc.id);
 								break;
 							case 'modified':
-								dispatchBooks({ type: 'update', id: change.doc.id, book: change.doc.data() });
+								bulkUpdates.push({ id: change.doc.id, book: change.doc.data() });
 								break;
-						} 
+						}
 					});
+					!isEmpty(bulkPushes) && dispatchBooks({ type: 'bulkPush', books: bulkPushes });
+					!isEmpty(bulkPops) && dispatchBooks({ type: 'bulkPops', books: bulkPops });
+					!isEmpty(bulkUpdates) && dispatchBooks({ type: 'bulkUpdates', books: bulkUpdates });
 				}
 			});
-		firebase.db.collection('books').get()
+		firebase.db.collection('books')
+			.orderBy('id', 'asc')
+			.get()
 			.then(function(querySnapshot) {
 				if (mounted) {
+					const intBooks = [];
 					querySnapshot.forEach(function(doc) {
-						dispatchBooks({ type: 'push', id: doc.id, book: doc.data() });
+						intBooks.push({id: doc.id, book: doc.data()});
 					});
+					dispatchBooks({ type: 'bulkPush', books: intBooks });
 				}
 			});
 		return () => { mounted = false; };

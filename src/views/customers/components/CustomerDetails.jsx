@@ -34,7 +34,7 @@ const CustomerDetails = ({ match, ...props }) => {
 	const goToCustomers = useCallback(() => {
 		setOpen(false);
 		setTimeout(() => history.push("/customers/"), 300);
-	}, []);
+	}, [history]);
 	const goBack = useCallback(() => {
 		if (mode === 'edit') {
 			history.push(`/customers/view/${customerId}`);
@@ -42,10 +42,10 @@ const CustomerDetails = ({ match, ...props }) => {
 		else {
 			goToCustomers();
 		}
-	}, [customerId, mode, goToCustomers]);
+	}, [customerId, mode, history, goToCustomers]);
 
 	useEffect(() => {
-		!open && setTimeout(() => setOpen(true), 100);
+		setTimeout(() => setOpen(true), 100);
 	}, []);
 
 	const componentToShow = useMemo(() => {
@@ -54,11 +54,11 @@ const CustomerDetails = ({ match, ...props }) => {
 			case 'new':
 				component = <CustomerForm create={true} goBack={goBack} />
 				break;
-			case 'view':
-				component = <CustomerPreview customerId={customerId} customer={customer} goBack={goBack} />
-				break;
 			case 'edit':
 				component = <CustomerForm customerId={customerId} customer={customer} goBack={goBack} />
+				break;
+			default:
+				component = <CustomerPreview customerId={customerId} customer={customer} goBack={goBack} />
 				break;
 		}
 		return component;

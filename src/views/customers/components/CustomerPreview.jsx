@@ -1,35 +1,27 @@
 import React, { useContext, useState, useCallback } from 'react';
 import { Link as RouterLink } from "react-router-dom";
 import styled from 'styled-components';
+import { isEmpty } from 'lodash';
 
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import Table from '@material-ui/core/Table';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import TableBody from '@material-ui/core/TableBody';
 
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/EditOutlined';
 
+import { getFormattedDate } from '../../../utils/functions';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
-const GridEl = styled(Grid)`
-	img{
-		width: 100%;
-		max-width: 100%;
-	}
-	.book-author{
-		margin: 5px 0;
-	}
-	.book-title{
-		margin: 0;
-		font-size: 30px;
-	}
-`;
 const CustomerPreview = ({ customerId, customer, goBack }) => {
 	const firebase = useContext(FirebaseContext);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -62,14 +54,42 @@ const CustomerPreview = ({ customerId, customer, goBack }) => {
 					startIcon={<EditIcon fontSize="small" />}
 				>Edit</Button>
 			</DrawerHeader>
-			<GridEl container spacing={2}>
-				<Grid item xs={4}>
-					<img src={ customer.picture ? customer.picture : `https://picsum.photos/200/300?random=${customerId}` } />
-				</Grid>
-				<Grid item xs={8}>
-					<h2 className="customer-name">{ customer.firstname } { customer.lastname }</h2>
-				</Grid>
-			</GridEl>
+			<Table>
+				<TableBody>
+					<TableRow>
+						<TableCell width="200px" variant="head">ID</TableCell>
+						<TableCell>{ customer.id }</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell variant="head">Name</TableCell>
+						<TableCell>{ customer.name }</TableCell>
+					</TableRow>
+					{!isEmpty(customer.email) && (
+						<TableRow>
+							<TableCell variant="head">Email</TableCell>
+							<TableCell>{ customer.email }</TableCell>
+						</TableRow>
+					)}
+					<TableRow>
+						<TableCell variant="head">City</TableCell>
+						<TableCell>{ customer.city }</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell variant="head">Phone</TableCell>
+						<TableCell>{ customer.phone }</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell variant="head">Deposit</TableCell>
+						<TableCell>{ customer.deposit } &euro;</TableCell>
+					</TableRow>
+					{customer.registration_date && (
+						<TableRow>
+							<TableCell variant="head">Registration date</TableCell>
+							<TableCell>{ getFormattedDate(customer.registration_date.seconds) }</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
 			<Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
 				<DialogTitle>Delete this customer?</DialogTitle>
 				<DialogContent>

@@ -6,9 +6,8 @@ import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import Drawer from '@material-ui/core/Drawer';
 
-import BookContext from '../../../context/Book/BookContext';
-import BookPreview from './BookPreview';
-import BookForm from './BookForm';
+import BorrowContext from '../../../context/Borrow/BorrowContext';
+import BorrowForm from './BorrowForm';
 
 const StyledDrawer = styled(Drawer)`
 	.MuiDrawer-paper {
@@ -21,28 +20,28 @@ const StyledDrawer = styled(Drawer)`
 	}
 `;
 
-const BookDetails = ({ match, ...props }) => {
+const BorrowDetails = ({ match, ...props }) => {
 	const [open, setOpen] = useState(false);
-	const bookStore = useContext(BookContext);
+	const borrowStore = useContext(BorrowContext);
 	const history = useHistory();
 
-	const bookId = match.params.id;
+	const borrowId = match.params.id;
 	const mode = match.params.mode;
 
-	const book = bookStore.getBook(bookId);
+	const borrow = borrowStore.getBorrow(borrowId);
 
-	const goToBooks = useCallback(() => {
+	const goToBorrows = useCallback(() => {
 		setOpen(false);
-		setTimeout(() => history.push("/books/"), 300);
+		setTimeout(() => history.push("/borrows/"), 300);
 	}, [history]);
 	const goBack = useCallback(() => {
 		if (mode === 'edit') {
-			history.push(`/books/view/${bookId}`);
+			history.push(`/borrows/view/${borrowId}`);
 		}
 		else {
-			goToBooks();
+			goToBorrows();
 		}
-	}, [bookId, mode, history, goToBooks]);
+	}, [borrowId, mode, history, goToBorrows]);
 
 	useEffect(() => {
 		setTimeout(() => setOpen(true), 100);
@@ -51,21 +50,18 @@ const BookDetails = ({ match, ...props }) => {
 	const componentToShow = useMemo(() => {
 		let component = null;
 		switch (mode) {
-			case 'new':
-				component = <BookForm create={true} goBack={goBack} />
-				break;
 			case 'edit':
-				component = <BookForm bookId={bookId} book={book} goBack={goBack} />
+				component = <BorrowForm borrowId={borrowId} borrow={borrow} goBack={goBack} />
 				break;
 			default:
-				component = <BookPreview bookId={bookId} book={book} goBack={goBack} />
+				component = <BorrowForm create={true} goBack={goBack} />
 				break;
 		}
 		return component;
-	}, [bookId, book, mode, goBack]);
+	}, [borrowId, borrow, mode, goBack]);
 
 	return (
-		<StyledDrawer anchor="right" open={open} onClose={goToBooks}>
+		<StyledDrawer anchor="right" open={open} onClose={goToBorrows}>
 			<Container style={{ minWidth: '40vw' }}>
 				<Box p={2}>
 					{ componentToShow }
@@ -75,4 +71,4 @@ const BookDetails = ({ match, ...props }) => {
 	);
 };
 
-export default BookDetails;
+export default BorrowDetails;

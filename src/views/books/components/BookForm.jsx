@@ -3,12 +3,8 @@ import { reduce, isEmpty } from 'lodash';
 
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
-import Snackbar from '@material-ui/core/Snackbar';
-import IconButton from '@material-ui/core/IconButton';
 import FormControl from '@material-ui/core/FormControl';
 import TextField from '@material-ui/core/TextField';
-
-import CloseIcon from '@material-ui/icons/Close';
 
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
@@ -20,8 +16,6 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 		copies: 1,
 		picture: ''
 	} : book);
-	const [openModSnackbar, setModSnackbar] = useState(false);
-	const [saving, setSaving] = useState(false);
 	const firebase = useContext(FirebaseContext);
 	const formRef = useRef(null);
 
@@ -34,11 +28,6 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 		}, {});
 	}, [formBook, book]);
 
-	const modSnackbarUpdate = useCallback(() => {
-		setBook(book);
-		setModSnackbar(false);
-	}, [book]);
-
 	const saveBook = useCallback((e) => {
 		e.preventDefault();
 		if (create) {
@@ -50,7 +39,6 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 		else {
 			const bookDiffs = getBookDiffs();
 			if (!isEmpty(bookDiffs)) {
-				setSaving(true);
 				firebase.db.collection('books').doc(bookId).update(formBook)
 					.then(() => {
 						goBack();
@@ -64,25 +52,13 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 	}, [create, bookId, goBack, formBook, getBookDiffs, firebase]);
 
 	useEffect(() => {
-		if (!create) {
-			if (typeof formBook === 'undefined'){
-				setBook(book);
-			}
-			else {
-				const bookDiffs = getBookDiffs();
-				if (!isEmpty(bookDiffs) && !saving) {
-					setModSnackbar(true);
-				}
-			}
-		}
-	}, [book, saving, formBook, create, getBookDiffs]);
-
-	const modSnackbarClose = () => setModSnackbar(false);
+		!create && typeof formBook === 'undefined' && setBook(book);
+	}, [book, formBook, create]);
 
 	const handleChange = (event) => {
 		setBook({
 			...formBook,
-			[event.target.name]: event.target.value
+			[event.target.name]: event.target.type === 'number' ? parseInt(event.target.value) : event.target.value
 		});
 	};
 	let headerActions = null;
@@ -134,6 +110,9 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 					<TextField value={formBook.id} type="number" name="id" label="Internal ID" onChange={handleChange} />
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
+					<TextField value={formBook.punjabi_title} type="text" name="punjabi_title" label="Punjabi Title" onChange={handleChange} />
+				</FormControl>
+				<FormControl fullWidth={true} margin="dense">
 					<TextField value={formBook.title} type="text" name="title" label="Title" onChange={handleChange} />
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
@@ -143,24 +122,6 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 					<TextField value={formBook.copies} type="number" name="copies" label="Copies" onChange={handleChange} />
 				</FormControl>
 			</form>
-			<Snackbar
-				anchorOrigin={{
-					vertical: 'bottom',
-					horizontal: 'right',
-				}}
-				open={openModSnackbar}
-				autoHideDuration={6000}
-				onClose={modSnackbarClose}
-				message="This book has changed. Update the view to see the changes."
-				action={
-					<React.Fragment>
-						<Button color="secondary" size="small" onClick={modSnackbarUpdate}>Update</Button>
-						<IconButton size="small" aria-label="close" color="inherit" onClick={modSnackbarClose}>
-							<CloseIcon fontSize="small" />
-						</IconButton>
-					</React.Fragment>
-				}
-			/>
 		</>
 	);
 }

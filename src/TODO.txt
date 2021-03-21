@@ -1,0 +1,3 @@
+Gestire numero tessera durante creazione customer
+Ricerca customer, libro, prestito
+Better presentation text

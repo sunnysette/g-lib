@@ -8,7 +8,9 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles(theme => ({
 	root: {
+		display: 'flex',
 		margin: theme.spacing(2),
+		width: 'calc(20% - ' + theme.spacing(4) + 'px)',
 		'&:hover,&:focus': {
 			boxShadow: theme.shadows[8],
 		},
@@ -21,9 +23,11 @@ const CustomerItem = ({customer, id}) => {
 	return (
 		<Card className={classes.root}>
 			<CardActionArea to={`/customers/view/${id}`} component={Link}>
-				<img src={ customer.picture ? customer.picture : `https://picsum.photos/200?random=${id}` } />
+				<img src={ customer.picture ? customer.picture : `https://picsum.photos/200?random=${id}` } style={{ width: '100%' }} />
 				<CardContent>
-					{ customer.firstname }
+					<span>{ customer.firstname } { customer.lastname }</span>
+					<br/>
+					<span>{ customer.address }</span>
 				</CardContent>
 			</CardActionArea>
 		</Card>

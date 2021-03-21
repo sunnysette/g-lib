@@ -1,23 +1,52 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { isEmpty, reduce } from 'lodash';
 
-import Box from '@material-ui/core/Box';
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
-
+import { DataGrid, GridToolbarContainer, GridDensitySelector, GridFilterToolbarButton } from '@material-ui/data-grid';
 import AddIcon from '@material-ui/icons/Add';
 
 import CustomerContext from '../../context/Customer/CustomerContext';
-import CustomerItem from './components/CustomerItem';
+
+const columns = [
+	{ field: 'internal_id', headerName: 'ID', width: 100 },
+	{ field: 'name', headerName: 'Name', flex: 1 },
+	{ field: 'city', headerName: 'City', flex: 1 },
+	{ field: 'phone', headerName: 'Phone', flex: 1 },
+	{ field: 'deposit', headerName: 'Deposit', flex: 1 },
+];
+
+function CustomToolbar() {
+	return (
+		<GridToolbarContainer>
+			<GridDensitySelector />
+			<GridFilterToolbarButton />
+		</GridToolbarContainer>
+	);
+}
 
 const CustomersView = () => {
 	const customerStore = useContext(CustomerContext);
+	const history = useHistory();
 
 	return (
 		<Container>
-			<Box p={4} display="flex" flexWrap="wrap">
-				{ Object.keys(customerStore.customers).map((key) => <CustomerItem key={key} id={key} customer={customerStore.customers[key]} />)}
-			</Box>
+			<div style={{ padding: '50px 0', display: 'flex', height: '100%' }}>
+  				<div style={{ flexGrow: 1 }}>
+					<DataGrid
+						rows={reduce(customerStore.customers, (acc, customer, key) => ([...acc, { ...customer, internal_id: customer.id, id: key }]), [])}
+						columns={columns}
+						pageSize={15}
+						loading={isEmpty(customerStore.customers)}
+						density="compact"
+						onRowClick={(customer) => history.push(`/customers/view/${customer.row.id}`)}
+						rowsPerPageOptions={[15, 30, 50, 100]}
+						components={{ Toolbar: CustomToolbar }}
+						autoHeight
+					/>
+				</div>
+			</div>
 			<Fab 
 				to="/customers/new/"
 				color="primary"
