@@ -9,8 +9,11 @@ import TextField from '@material-ui/core/TextField';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const CustomerForm = ({ create, customerId, customer, goBack }) => {
 	const [formCustomer, setCustomer] = useState(create ? {
+		id: 0,
 		city: '',
 		deposit: 0,
 		email: '',
@@ -33,18 +36,14 @@ const CustomerForm = ({ create, customerId, customer, goBack }) => {
 	const saveCustomer = useCallback((e) => {
 		e.preventDefault();
 		if (create) {
-			firebase.db.collection('customers').doc().set(formCustomer)
-				.then(() => {
-					goBack();
-				});
+			dbWritePromise(firebase.db.collection('customers').doc().set(formCustomer))
+				.then(() => goBack());
 		}
 		else {
 			const customerDiffs = getCustomerDiffs();
 			if (!isEmpty(customerDiffs)) {
-				firebase.db.collection('customers').doc(customerId).update(formCustomer)
-					.then(() => {
-						goBack();
-					});
+				dbWritePromise(firebase.db.collection('customers').doc(customerId).update(formCustomer))
+					.then(() => goBack());
 			}
 			else {
 				goBack();
@@ -108,11 +107,9 @@ const CustomerForm = ({ create, customerId, customer, goBack }) => {
 		<>
 			<DrawerHeader onBack={goBack}>{ headerActions }</DrawerHeader>
 			<form ref={formRef}>
-				{ create &&
-					<FormControl margin="dense">
-						<TextField value={formCustomer.id} type="number" name="id" label="Card number" onChange={handleChange} />
-					</FormControl>
-				}
+				<FormControl margin="dense">
+					<TextField value={formCustomer.id} type="number" name="id" label="Card number" onChange={handleChange} />
+				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
 					<TextField value={formCustomer.name} type="text" name="name" label="Name" onChange={handleChange} />
 				</FormControl>

@@ -6,8 +6,10 @@ import CustomerContext from './CustomerContext';
 
 function customerReducer(state, action) {
 	switch (action.type) {
+		case 'init':
+			return {};
 		case 'bulkPush':
-			return { ...state, ...action.customers.reduce((customers, customer, key) => ({...customers, [customer.id]: customer.customer }), {}) };
+			return { ...action.customers.reduce((customers, customer, key) => ({...customers, [customer.id]: customer.customer }), {}), ...state };
 		case 'bulkPops':
 			const newBulkState = {...state};
 			action.customers.forEach((id) => {
@@ -23,7 +25,7 @@ function customerReducer(state, action) {
 
 function CustomerContextProvider({ children }) {
 	const firebase = useContext(FirebaseContext);
-	const [customers, dispatchCustomers] = useReducer(customerReducer, {});
+	const [customers, dispatchCustomers] = useReducer(customerReducer, undefined);
 
 	useEffect(() => {
 		let mounted = true;
@@ -34,6 +36,7 @@ function CustomerContextProvider({ children }) {
 					const bulkPushes = [];
 					const bulkPops = [];
 					const bulkUpdates = [];
+					if (snapshot.empty) dispatchCustomers({ type: 'init' });
 					snapshot.docChanges().forEach(function(change) {
 						switch (change.type) {
 							case 'added':
@@ -52,7 +55,7 @@ function CustomerContextProvider({ children }) {
 					!isEmpty(bulkUpdates) && dispatchCustomers({ type: 'bulkUpdates', customers: bulkUpdates });
 				}
 			});
-		firebase.db.collection('customers')
+		/*firebase.db.collection('customers')
 			.orderBy('id', 'asc')
 			.get()
 			.then(function(querySnapshot) {
@@ -63,14 +66,14 @@ function CustomerContextProvider({ children }) {
 					});
 					dispatchCustomers({ type: 'bulkPush', customers: intCustomers });
 				}
-			});
+			});*/
 		return () => { mounted = false; };
 	}, []);
 
 	return (
 		<CustomerContext.Provider value={{
 			customers,
-			getCustomer: (id) => customers[id]
+			getCustomer: (id) => customers && customers[id]
 		}}>
 			{ children }
 		</CustomerContext.Provider>

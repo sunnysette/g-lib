@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { FirebaseContext } from '../context/Firebase';
-import booksToImport from './data';
+//import booksToImport from './data_books';
+//import usersToImport from './data_users';
 
 const ImportView = () => {
 	const firebase = useContext(FirebaseContext);
@@ -31,6 +32,21 @@ const ImportView = () => {
 					console.log(book);
 				}
 			});
+	}, []);*/
+
+	/*useEffect(() => {
+		async function importUsers() {
+			for (let user of usersToImport){
+				await new Promise(r => setTimeout(r, 1000));
+				await firebase.db.collection("customers").doc().set({
+					...user,
+					phone: user.phone.toString(),
+					email: '',
+					registration_date: new Date()
+				});
+			}
+		}
+		importUsers();
 	}, []);*/
 
 	return null;

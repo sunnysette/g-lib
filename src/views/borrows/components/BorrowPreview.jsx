@@ -21,6 +21,8 @@ import CustomerContext from '../../../context/Customer/CustomerContext';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const GridEl = styled(Grid)`
 	img{
 		width: 100%;
@@ -49,12 +51,11 @@ const BorrowPreview = ({ borrowId, borrow, goBack }) => {
 	const handleDeleteDialogOpen = useCallback(() => setDeleteDialogOpen(true), []);
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);
 	const handleReturn = useCallback(() => {
-		firebase.db.collection('borrows').doc(borrowId).update({
-			returnDate: new Date()
-		}).then(() => handleReturnDialogClose());
+		dbWritePromise(firebase.db.collection('borrows').doc(borrowId).update({ returnDate: new Date() }))
+			.then(() => handleReturnDialogClose());
 	}, [borrowId, goBack]);
 	const handleDelete = useCallback(() => {
-		firebase.db.collection('borrows').doc(borrowId).delete()
+		dbWritePromise(firebase.db.collection('borrows').doc(borrowId).delete())
 			.then(() => goBack());
 	}, [borrowId, handleReturnDialogClose]);
 

@@ -22,15 +22,15 @@ import { getFormattedDate } from '../../../utils/functions';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const CustomerPreview = ({ customerId, customer, goBack }) => {
 	const firebase = useContext(FirebaseContext);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const handleDelete = useCallback(() => {
-		firebase.db.collection('customers').doc(customerId).delete()
-			.then(() => {
-				goBack();
-			});
+		dbWritePromise(firebase.db.collection('customers').doc(customerId).delete())
+			.then(() => goBack());
 	}, [customerId, goBack]);
 	const handleDeleteDialogOpen = useCallback(() => setDeleteDialogOpen(true), []);
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);
@@ -70,18 +70,24 @@ const CustomerPreview = ({ customerId, customer, goBack }) => {
 							<TableCell>{ customer.email }</TableCell>
 						</TableRow>
 					)}
-					<TableRow>
-						<TableCell variant="head">City</TableCell>
-						<TableCell>{ customer.city }</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell variant="head">Phone</TableCell>
-						<TableCell>{ customer.phone }</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell variant="head">Deposit</TableCell>
-						<TableCell>{ customer.deposit } &euro;</TableCell>
-					</TableRow>
+					{!isEmpty(customer.city) && (
+						<TableRow>
+							<TableCell variant="head">City</TableCell>
+							<TableCell>{ customer.city }</TableCell>
+						</TableRow>
+					)}
+					{!isEmpty(customer.phone) && (
+						<TableRow>
+							<TableCell variant="head">Phone</TableCell>
+							<TableCell>{ customer.phone }</TableCell>
+						</TableRow>
+					)}
+					{!isEmpty(customer.deposit) && (
+						<TableRow>
+							<TableCell variant="head">Deposit</TableCell>
+							<TableCell>{ customer.deposit } &euro;</TableCell>
+						</TableRow>
+					)}
 					{customer.registration_date && (
 						<TableRow>
 							<TableCell variant="head">Registration date</TableCell>

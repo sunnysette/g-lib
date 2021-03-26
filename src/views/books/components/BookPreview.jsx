@@ -20,15 +20,15 @@ import EditIcon from '@material-ui/icons/EditOutlined';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const BookPreview = ({ bookId, book, goBack }) => {
 	const firebase = useContext(FirebaseContext);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const handleDelete = useCallback(() => {
-		firebase.db.collection('books').doc(bookId).delete()
-			.then(() => {
-				goBack();
-			});
+		dbWritePromise(firebase.db.collection('books').doc(bookId).delete())
+			.then(() => goBack());
 	}, [bookId, goBack]);
 	const handleDeleteDialogOpen = useCallback(() => setDeleteDialogOpen(true), []);
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);

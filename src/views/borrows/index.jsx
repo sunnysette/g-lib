@@ -27,7 +27,7 @@ import CustomerContext from '../../context/Customer/CustomerContext';
 import { FirebaseContext } from '../../context/Firebase';
 
 import BorrowContext from '../../context/Borrow/BorrowContext';
-import { getFormattedDate } from '../../utils/functions';
+import { getFormattedDate, dbWritePromise } from '../../utils/functions';
 
 function CustomToolbar() {
 	return (
@@ -57,9 +57,11 @@ const Actions = ({ borrow, setBookManaged, setReturnDialogOpen, setDeleteDialogO
 				open={optionsOpen}
 				onClose={() => setOptionsOpen(false)}
 			>
-				<MenuItem onClick={() => { setOptionsOpen(false); setReturnDialogOpen(true); }}>
-					<KeyboardReturn fontSize="small" color="primary" style={{ marginRight: '10px' }} /> Return
-				</MenuItem>
+				{!borrow.row.returnDate && (
+					<MenuItem onClick={() => { setOptionsOpen(false); setReturnDialogOpen(true); }}>
+						<KeyboardReturn fontSize="small" color="primary" style={{ marginRight: '10px' }} /> Return
+					</MenuItem>
+				)}
 				<MenuItem onClick={() => { setOptionsOpen(false); setDeleteDialogOpen(true); }}>
 					<DeleteIcon fontSize="small" color="secondary" style={{ marginRight: '10px' }} /> Delete
 				</MenuItem>
@@ -86,11 +88,11 @@ const BorrowsView = () => {
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);
 	
 	const handleReturn = useCallback(() => {
-		firebase.db.collection('borrows').doc(bookManaged).update({ returnDate: new Date() })
+		dbWritePromise(firebase.db.collection('borrows').doc(bookManaged).update({ returnDate: new Date() }))
 			.then(() => handleReturnDialogClose());
 	}, [bookManaged]);
 	const handleDelete = useCallback(() => {
-		firebase.db.collection('borrows').doc(bookManaged).delete()
+		dbWritePromise(firebase.db.collection('borrows').doc(bookManaged).delete())
 			.then(() => handleDeleteDialogClose());
 	}, [bookManaged]);
 
@@ -126,7 +128,7 @@ const BorrowsView = () => {
 						]), [])}
 						columns={columns}
 						pageSize={15}
-						loading={isEmpty(borrowStore.borrows)}
+						loading={typeof borrowStore.borrows === 'undefined'}
 						density="compact"
 						rowsPerPageOptions={[15, 30, 50, 100]}
 						components={{ Toolbar: CustomToolbar }}

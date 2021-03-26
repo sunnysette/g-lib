@@ -1,3 +1,15 @@
 Gestire numero tessera durante creazione customer
 Ricerca customer, libro, prestito
 Better presentation text
+
+View borrow:
+- Order by Date i borrows,
+- Show only i borrows non tornati, by default
+- Add filter to show i borrows tornati
+- Enhance rows to show anche id libro, title punjabi
+- Enhance rows to show anche id customer, city
+
+Add borrow: 
+- allow search by all visible fields
+- enhance options to show id libro and title_punajbi
+- enhance options to show id customer and city

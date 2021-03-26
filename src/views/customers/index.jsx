@@ -14,7 +14,7 @@ const columns = [
 	{ field: 'name', headerName: 'Name', flex: 1 },
 	{ field: 'city', headerName: 'City', flex: 1 },
 	{ field: 'phone', headerName: 'Phone', flex: 1 },
-	{ field: 'deposit', headerName: 'Deposit', flex: 1 },
+	{ field: 'deposit', headerName: 'Deposit', flex: 1, renderCell: (params) => params.value && <span>{params.value} &euro;</span> },
 ];
 
 function CustomToolbar() {
@@ -38,7 +38,7 @@ const CustomersView = () => {
 						rows={reduce(customerStore.customers, (acc, customer, key) => ([...acc, { ...customer, internal_id: customer.id, id: key }]), [])}
 						columns={columns}
 						pageSize={15}
-						loading={isEmpty(customerStore.customers)}
+						loading={typeof customerStore.customers === 'undefined'}
 						density="compact"
 						onRowClick={(customer) => history.push(`/customers/view/${customer.row.id}`)}
 						rowsPerPageOptions={[15, 30, 50, 100]}

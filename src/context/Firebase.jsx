@@ -25,6 +25,7 @@ class Firebase {
 		this.db = app.firestore();
 		this.db.enablePersistence({ synchronizeTabs: true })
 			.catch((err) => console.log('Error in Enabling Persistence', err));
+		// this.db.disableNetwork();
 	}
 	signIn = (email, password) => this.auth.signInWithEmailAndPassword(email, password);
 	signOut = () => this.auth.signOut();

@@ -6,8 +6,10 @@ import BookContext from './BookContext';
 
 function booksReducer(state, action) {
 	switch (action.type) {
+		case 'init':
+			return {};
 		case 'bulkPush':
-			return { ...state, ...action.books.reduce((books, book, key) => ({ ...books, [book.id]: book.book }), {}) };
+			return { ...action.books.reduce((books, book, key) => ({ ...books, [book.id]: book.book }), {}), ...state };
 		case 'bulkPops':
 			const newBulkState = {...state};
 			action.books.forEach((id) => {
@@ -23,7 +25,7 @@ function booksReducer(state, action) {
 
 function BookContextProvider({ children }) {
 	const firebase = useContext(FirebaseContext);
-	const [books, dispatchBooks] = useReducer(booksReducer, {});
+	const [books, dispatchBooks] = useReducer(booksReducer, undefined);
 
 	useEffect(() => {
 		let mounted = true;
@@ -34,6 +36,7 @@ function BookContextProvider({ children }) {
 					const bulkPushes = [];
 					const bulkPops = [];
 					const bulkUpdates = [];
+					if (snapshot.empty) dispatchBooks({ type: 'init' });
 					snapshot.docChanges().forEach(function(change) {
 						switch (change.type) {
 							case 'added':
@@ -52,7 +55,7 @@ function BookContextProvider({ children }) {
 					!isEmpty(bulkUpdates) && dispatchBooks({ type: 'bulkUpdates', books: bulkUpdates });
 				}
 			});
-		firebase.db.collection('books')
+		/*firebase.db.collection('books')
 			.orderBy('id', 'asc')
 			.get()
 			.then(function(querySnapshot) {
@@ -63,14 +66,14 @@ function BookContextProvider({ children }) {
 					});
 					dispatchBooks({ type: 'bulkPush', books: intBooks });
 				}
-			});
+			});*/
 		return () => { mounted = false; };
 	}, []);
 
 	return (
 		<BookContext.Provider value={{
 			books,
-			getBook: (id) => books[id]
+			getBook: (id) => books && books[id]
 		}}>
 			{ children }
 		</BookContext.Provider>

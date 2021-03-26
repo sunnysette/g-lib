@@ -13,6 +13,8 @@ import DrawerHeader from '../../../shared/DrawerHeader';
 import BookContext from '../../../context/Book/BookContext';
 import CustomerContext from '../../../context/Customer/CustomerContext';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 	const [formBorrow, setBorrow] = useState(create ? {
 		book: '',
@@ -39,18 +41,14 @@ const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 		e.preventDefault();
 		if (create) {
 			formBorrow.date = new Date();
-			firebase.db.collection('borrows').doc().set(formBorrow)
-				.then(() => {
-					goBack();
-				});
+			dbWritePromise(firebase.db.collection('borrows').doc().set(formBorrow))
+				.then(() => goBack());
 		}
 		else {
 			const customerDiffs = getCustomerDiffs();
 			if (!isEmpty(customerDiffs)) {
-				firebase.db.collection('borrows').doc(borrowId).update(formBorrow)
-					.then(() => {
-						goBack();
-					});
+				dbWritePromise(firebase.db.collection('borrows').doc(borrowId).update(formBorrow))
+					.then(() => goBack());
 			}
 			else {
 				goBack();

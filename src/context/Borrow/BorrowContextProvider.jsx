@@ -6,8 +6,10 @@ import BorrowContext from './BorrowContext';
 
 function borrowReducer(state, action) {
 	switch (action.type) {
+		case 'init':
+			return {};
 		case 'bulkPush':
-			return { ...state, ...action.borrows.reduce((borrows, borrow, key) => ({ ...borrows, [borrow.id]: borrow.borrow }), {}) };
+			return { ...action.borrows.reduce((borrows, borrow, key) => ({ ...borrows, [borrow.id]: borrow.borrow }), {}), ...state };
 		case 'bulkPops':
 			const newBulkState = {...state};
 			action.borrows.forEach((id) => {
@@ -23,7 +25,7 @@ function borrowReducer(state, action) {
 
 function BorrowContextProvider({ children }) {
 	const firebase = useContext(FirebaseContext);
-	const [borrows, dispatchBorrows] = useReducer(borrowReducer, {});
+	const [borrows, dispatchBorrows] = useReducer(borrowReducer, undefined);
 
 	useEffect(() => {
 		let mounted = true;
@@ -34,6 +36,7 @@ function BorrowContextProvider({ children }) {
 					const bulkPushes = [];
 					const bulkPops = [];
 					const bulkUpdates = [];
+					if (snapshot.empty) dispatchBorrows({ type: 'init' });
 					snapshot.docChanges().forEach(function(change) {
 						switch (change.type) {
 							case 'added':
@@ -52,7 +55,7 @@ function BorrowContextProvider({ children }) {
 					!isEmpty(bulkUpdates) && dispatchBorrows({ type: 'bulkUpdates', borrows: bulkUpdates });
 				}
 			});
-		firebase.db.collection('borrows')
+		/*firebase.db.collection('borrows')
 			.orderBy('date', 'desc')
 			.get()
 			.then(function(querySnapshot) {
@@ -63,14 +66,14 @@ function BorrowContextProvider({ children }) {
 					});
 					dispatchBorrows({ type: 'bulkPush', borrows: intBorrows });
 				}
-			});
+			});*/
 		return () => { mounted = false; };
 	}, []);
 
 	return (
 		<BorrowContext.Provider value={{
 			borrows,
-			getBorrow: (id) => borrows[id]
+			getBorrow: (id) => borrows && borrows[id]
 		}}>
 			{ children }
 		</BorrowContext.Provider>

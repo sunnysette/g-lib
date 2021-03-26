@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 
 import { FirebaseContext } from './context/Firebase';
@@ -19,19 +20,34 @@ import Login from './views/login/index'
 import Navbar from './shared/Navbar'
 import './App.css';
 
-const theme = createMuiTheme({
-	overrides: {
-		MuiFormControl: {
-			root: {
-				display: 'flex'
-			}
-		}
-	}
-});
-
 function App() {
 	const firebase = useContext(FirebaseContext);
 	const [user, setUser] = useState(undefined);
+	const [darkState, setDarkState] = useState(localStorage.getItem('darkMode') === 'true' || false);
+	const palletType = darkState ? "dark" : "light";
+
+	const theme = createMuiTheme({
+		palette: {
+			type: palletType,
+			primary: {
+				main: darkState ? '#6379f3' : '#3f51b5'
+			}
+		},
+		overrides: {
+			MuiFormControl: {
+				root: {
+					display: 'flex'
+				}
+			}
+		},
+		MuiCssBaseline: {
+			'@global': {
+				body: {
+					backgroundColor: darkState ? '#424242' : '#fafafa'
+				},
+			},
+		},
+	});
 
 	useEffect(() => {
 		const unlisten = firebase.auth.onAuthStateChanged((authUser) => {
@@ -50,11 +66,12 @@ function App() {
 	}
 	return (
 		<ThemeProvider theme={theme}>
+			<CssBaseline />
 			<BookContextProvider>
 				<CustomerContextProvider>
 					<BorrowContextProvider>
 						<BrowserRouter>
-							<Navbar />
+							<Navbar setDarkState={setDarkState} />
 							<Route exact path="/" component={DashboardView} />
 							<Route path="/books/" component={BooksView} />
 							<Route exact path="/books/:mode(view|edit)/:id" component={BookDetails} />

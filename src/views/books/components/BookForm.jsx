@@ -9,8 +9,11 @@ import TextField from '@material-ui/core/TextField';
 import { FirebaseContext } from '../../../context/Firebase';
 import DrawerHeader from '../../../shared/DrawerHeader';
 
+import { dbWritePromise } from '../../../utils/functions';
+
 const BookForm = ({ create, bookId, book, goBack }) => {
 	const [formBook, setBook] = useState(create ? {
+		id: 0,
 		title: '',
 		author: '',
 		copies: 1,
@@ -31,18 +34,14 @@ const BookForm = ({ create, bookId, book, goBack }) => {
 	const saveBook = useCallback((e) => {
 		e.preventDefault();
 		if (create) {
-			firebase.db.collection('books').doc().set(formBook)
-				.then(() => {
-					goBack();
-				});
+			dbWritePromise(firebase.db.collection('books').doc().set(formBook))
+				.then(() => goBack());
 		}
 		else {
 			const bookDiffs = getBookDiffs();
 			if (!isEmpty(bookDiffs)) {
-				firebase.db.collection('books').doc(bookId).update(formBook)
-					.then(() => {
-						goBack();
-					});
+				dbWritePromise(firebase.db.collection('books').doc(bookId).update(formBook))
+					.then(() => goBack());
 			}
 			else {
 				goBack();

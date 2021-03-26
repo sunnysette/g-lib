@@ -41,7 +41,7 @@ const BooksView = () => {
 						rows={reduce(bookStore.books, (acc, book, key) => ([...acc, { ...book, internal_id: book.id, id: key }]), [])}
 						columns={columns}
 						pageSize={15}
-						loading={isEmpty(bookStore.books)}
+						loading={typeof bookStore.books === 'undefined'}
 						density="compact"
 						onRowClick={(book) => history.push(`/books/view/${book.row.id}`)}
 						rowsPerPageOptions={[15, 30, 50, 100]}

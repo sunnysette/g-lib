@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-export default function ButtonAppBar() {
+export default function ButtonAppBar({ setDarkState }) {
 	const firebase = useContext(FirebaseContext);
 	const [anchorEl, setAnchorEl] = React.useState(null);
 	const open = Boolean(anchorEl);
@@ -45,9 +45,6 @@ export default function ButtonAppBar() {
 			<AppBar position="static">
 				<Toolbar className={classes.toolbox}>
 					<Box display="flex" alignItems="center">
-						<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-							<MenuIcon />
-						</IconButton>
 						<Typography variant="h6">G Library</Typography>
 					</Box>
 					<div>
@@ -81,6 +78,14 @@ export default function ButtonAppBar() {
 							open={open}
 							onClose={handleClose}
 						>
+							<MenuItem onClick={() => {
+								setDarkState((state) => {
+									localStorage.setItem('darkMode', !state);
+									return !state
+								})
+							}}>
+								Toggle Dark mode
+							</MenuItem>
 							<MenuItem onClick={() => {
 								handleClose();
 								firebase.signOut();
