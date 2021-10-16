@@ -4,7 +4,7 @@ import { isEmpty, reduce } from 'lodash';
 
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
-import { DataGrid, GridToolbarContainer, GridDensitySelector, GridFilterToolbarButton } from '@material-ui/data-grid';
+import { DataGrid, GridToolbarContainer, GridFilterToolbarButton } from '@material-ui/data-grid';
 import AddIcon from '@material-ui/icons/Add';
 
 import BookContext from '../../context/Book/BookContext';
@@ -23,7 +23,6 @@ const columns = [
 function CustomToolbar() {
 	return (
 		<GridToolbarContainer>
-			<GridDensitySelector />
 			<GridFilterToolbarButton />
 		</GridToolbarContainer>
 	);

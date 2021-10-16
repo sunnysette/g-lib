@@ -1,19 +1,22 @@
 import React, { useRef, useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { reduce, isEmpty } from 'lodash';
-
+import styled from 'styled-components';
 
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-import { DataGrid, GridToolbarContainer, GridDensitySelector, GridFilterToolbarButton } from '@material-ui/data-grid';
+import { DataGrid, GridToolbarContainer, GridFilterToolbarButton } from '@material-ui/data-grid';
 
+import Badge from '@material-ui/core/Badge';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -29,11 +32,25 @@ import { FirebaseContext } from '../../context/Firebase';
 import BorrowContext from '../../context/Borrow/BorrowContext';
 import { getFormattedDate, dbWritePromise } from '../../utils/functions';
 
-function CustomToolbar() {
+
+function ReturnedBooksFilter({ checked, handleChange }) {
+	return (
+		<FormControlLabel
+			style={{ paddingLeft: '20px' }}
+			value="top"
+			control={<Checkbox color="primary" checked={checked} onChange={handleChange} />}
+			label="Show returned books"
+		/>
+	);
+}
+function CustomToolbar({ options }) {
 	return (
 		<GridToolbarContainer>
-			<GridDensitySelector />
 			<GridFilterToolbarButton />
+			<ReturnedBooksFilter
+				checked={options.componentsProps.showReturnedBooks}
+				handleChange={() => options.componentsProps.setShowReturnedBooks((c) => !c)}
+			/>
 		</GridToolbarContainer>
 	);
 }
@@ -74,6 +91,74 @@ const StyledCell = ({ borrow }) => {
 	return <del>{ borrow.value }</del>;
 };
 
+const ContentContainer = styled.div`
+	display: flex;
+	line-height: 1.5;
+	max-width: 100%;
+
+	.badge-container{
+		padding: 0 5px;
+	}
+	.content-container{
+		flex: 1;
+		flex-basis: 0;
+		padding-left: 20px;
+		max-width: 100%;
+		
+		> div{
+			text-overflow: ellipsis;
+			overflow: hidden;
+			
+			> span + .secondary-info:before{
+				content: '-';
+				padding: 0 7px;
+			}
+		}
+		.secondary-info{
+			opacity: 0.5;
+		}
+	}
+`;
+const StyledBook = ({ borrow }) => {
+	if (!borrow.row.bookData) return null;
+	return (
+		<ContentContainer>
+			<div className="badge-container">
+				<Badge badgeContent={borrow.row.bookData.id} color="secondary" max={99999} />
+			</div>
+			<div className="content-container">
+				<div>{borrow.row.bookData.punjabi_title}</div>
+				<div>
+					{borrow.row.bookData.title && (<span>{borrow.row.bookData.title}</span>)}
+					{borrow.row.bookData.author && (
+						<span className="secondary-info">{borrow.row.bookData.author}</span>
+					)}
+				</div>
+			</div>
+		</ContentContainer>
+	);
+};
+
+const StyledCustomer = ({ borrow }) => {
+	if (!borrow.row.customerData) return null;
+	return (
+		<ContentContainer>
+			<div className="badge-container">
+				<Badge badgeContent={borrow.row.customerData.id} color="primary" max={99999} />
+			</div>
+			<div className="content-container">
+				<div>{borrow.row.customerData.name}</div>
+				<div>
+					{borrow.row.customerData.city && (<span>{borrow.row.customerData.city}</span>)}
+					{borrow.row.customerData.phone && (
+						<span className="secondary-info">{borrow.row.customerData.phone}</span>
+					)}
+				</div>
+			</div>
+		</ContentContainer>
+	);
+};
+
 const BorrowsView = () => {
 	const borrowStore = useContext(BorrowContext);
 	const bookStore = useContext(BookContext);
@@ -83,6 +168,7 @@ const BorrowsView = () => {
 	const [bookManaged, setBookManaged] = useState();
 	const [returnDialogOpen, setReturnDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [showReturnedBooks, setShowReturnedBooks] = useState(false);
 
 	const handleReturnDialogClose = useCallback(() => setReturnDialogOpen(false), []);
 	const handleDeleteDialogClose = useCallback(() => setDeleteDialogOpen(false), []);
@@ -105,10 +191,31 @@ const BorrowsView = () => {
 		/>
 	);
 	const renderStyledCell = (borrow) => <StyledCell borrow={borrow} />;
+	const renderBook = (borrow) => <StyledBook borrow={borrow} />;
+	const renderCustomer = (borrow) => <StyledCustomer borrow={borrow} />;
 	const columns = [
-		{ field: 'book', headerName: 'Book', flex: 1, valueGetter: (borrow) => borrow.row.bookData && borrow.row.bookData.title, renderCell: renderStyledCell },
-		{ field: 'customer', headerName: 'Customer', flex: 0.5, valueGetter: (borrow) => borrow.row.customerData && borrow.row.customerData.name, renderCell: renderStyledCell },
-		{ field: 'date', headerName: 'Date', type: 'dateTime', width: 200, valueGetter: (borrow) => getFormattedDate(borrow.row.date.seconds), renderCell: renderStyledCell },
+		{
+			field: 'book',
+			headerName: 'Book',
+			flex: 1,
+			renderCell: renderBook,
+			valueGetter: (borrow) => borrow.row.bookData && `${borrow.row.bookData.id} ${borrow.row.bookData.title} ${borrow.row.bookData.punjabi_title}`
+		},
+		{
+			field: 'customer',
+			headerName: 'Customer',
+			flex: 0.5,
+			renderCell: renderCustomer,
+			valueGetter: (borrow) => borrow.row.customerData && `${borrow.row.customerData.id} ${borrow.row.customerData.name} ${borrow.row.customerData.city} ${borrow.row.customerData.phone}`
+		},
+		{
+			field: 'date',
+			headerName: 'Date',
+			type: 'dateTime',
+			width: 200,
+			valueGetter: (borrow) => new Date(borrow.row.date.seconds * 1000).toLocaleString(),
+			renderCell: renderStyledCell
+		},
 		{ field: 'actions', headerName: 'Actions', renderCell: renderActions }
 	];
 
@@ -122,17 +229,19 @@ const BorrowsView = () => {
 							{
 								...borrow,
 								id: key,
-								bookData: bookStore.books[borrow.book],
-								customerData: customerStore.customers[borrow.customer] 
+								bookData: bookStore.books ? bookStore.books[borrow.book] : {},
+								customerData: customerStore.customers ? customerStore.customers[borrow.customer] : {} 
 							}
-						]), [])}
+						]), []).filter((borrow) => !showReturnedBooks ? !borrow.returnDate : true)}
 						columns={columns}
 						pageSize={15}
 						loading={typeof borrowStore.borrows === 'undefined'}
 						density="compact"
 						rowsPerPageOptions={[15, 30, 50, 100]}
 						components={{ Toolbar: CustomToolbar }}
+						componentsProps={{ showReturnedBooks, setShowReturnedBooks }}
 						autoHeight
+						rowHeight={100}
 						disableColumnMenu
 					/>
 				</div>
@@ -153,7 +262,7 @@ const BorrowsView = () => {
 			</Fab>
 
 			<Dialog open={returnDialogOpen} onClose={handleReturnDialogClose}>
-				<DialogTitle>Return this borrow? {bookManaged}</DialogTitle>
+				<DialogTitle>Return this borrow?</DialogTitle>
 				<DialogContent>
 					<DialogContentText>Are you sure to return this borrow? This action can't be reverted.</DialogContentText>
 				</DialogContent>
@@ -164,7 +273,7 @@ const BorrowsView = () => {
 			</Dialog>
 
 			<Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
-				<DialogTitle>Delete this borrow? {bookManaged}</DialogTitle>
+				<DialogTitle>Delete this borrow?</DialogTitle>
 				<DialogContent>
 					<DialogContentText>Are you sure about deleting this borrow? This action can't be reverted.</DialogContentText>
 				</DialogContent>

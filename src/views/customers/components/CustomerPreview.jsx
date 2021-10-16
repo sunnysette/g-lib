@@ -82,7 +82,7 @@ const CustomerPreview = ({ customerId, customer, goBack }) => {
 							<TableCell>{ customer.phone }</TableCell>
 						</TableRow>
 					)}
-					{!isEmpty(customer.deposit) && (
+					{customer.deposit && customer.deposit > 0 && (
 						<TableRow>
 							<TableCell variant="head">Deposit</TableCell>
 							<TableCell>{ customer.deposit } &euro;</TableCell>

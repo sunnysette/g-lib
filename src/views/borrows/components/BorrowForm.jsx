@@ -121,7 +121,15 @@ const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 							}
 						}}
 						options={books}
-						getOptionLabel={(option) => option.title || ""}
+						getOptionLabel={(option) => option.id && `${option.id}) ${option.punjabi_title} ${option.title}`}
+						renderOption={(option) => (
+							<React.Fragment>
+								<span>{option.id}</span>
+								{option.punjabi_title}
+								{option.title}
+								{option.author}
+							</React.Fragment>
+						)}
 						renderInput={(params) => <TextField {...params} type="text" name="book" label="Book" />}
 					/>
 				</FormControl>
@@ -136,7 +144,14 @@ const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 							}
 						}}
 						options={customers}
-						getOptionLabel={(option) => option.name || ""}
+						getOptionLabel={(option) => option.id && `${option.id}) ${option.name} ${option.city}`}
+						renderOption={(option) => (
+							<React.Fragment>
+								<span>{option.id}</span>
+								{option.name}
+								{option.city}
+							</React.Fragment>
+						)}
 						renderInput={(params) => <TextField {...params} type="text" name="customer" label="Customer" />}
 					/>
 				</FormControl>
