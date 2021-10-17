@@ -3,7 +3,6 @@ import { reduce, isEmpty } from 'lodash';
 import styled from 'styled-components';
 
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import Badge from '@material-ui/core/Badge';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
 import FormControl from '@material-ui/core/FormControl';
@@ -17,12 +16,6 @@ import CustomerContext from '../../../context/Customer/CustomerContext';
 
 import { StyledBook, StyledCustomer } from './StyledEntities';
 import { dbWritePromise } from '../../../utils/functions';
-
-const BookLabel = styled.div`
-	.id {
-		padding: 0 15px;
-	}
-`;
 
 const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 	const [formBorrow, setBorrow] = useState(create ? {

@@ -12,6 +12,8 @@ import DrawerHeader from '../../../shared/DrawerHeader';
 import { dbWritePromise } from '../../../utils/functions';
 
 const CustomerForm = ({ create, customerId, customer, goBack }) => {
+	const firebase = useContext(FirebaseContext);
+	// console.log(await firebase.db.collection('customers').orderBy('id', 'desc').get(), 'firebase');
 	const [formCustomer, setCustomer] = useState(create ? {
 		id: 0,
 		city: '',
@@ -21,7 +23,6 @@ const CustomerForm = ({ create, customerId, customer, goBack }) => {
 		phone: '',
 		registration_date: new Date()
 	} : customer);
-	const firebase = useContext(FirebaseContext);
 	const formRef = useRef(null);
 
 	const getCustomerDiffs = useCallback(() => {
@@ -52,6 +53,23 @@ const CustomerForm = ({ create, customerId, customer, goBack }) => {
 		return false;
 	}, [create, customerId, goBack, formCustomer, getCustomerDiffs, firebase]);
 
+	useEffect(() => {
+		async function fetchData() {
+			firebase.db.collection('customers')
+				.orderBy('id', 'asc')
+				.limitToLast(1)
+				.get()
+				.then((querySnapshot) => {
+					querySnapshot.docs.map((doc) => {
+						setCustomer((c) => ({
+							...c,
+							id: doc.data().id + 1
+						}));
+					})
+				})
+		}
+		fetchData();
+	}, []);
 	useEffect(() => {
 		!create && typeof formCustomer === 'undefined' && setCustomer(customer);
 	}, [customer, formCustomer, create]);
@@ -108,7 +126,7 @@ const CustomerForm = ({ create, customerId, customer, goBack }) => {
 			<DrawerHeader onBack={goBack}>{ headerActions }</DrawerHeader>
 			<form ref={formRef}>
 				<FormControl margin="dense">
-					<TextField value={formCustomer.id} type="number" name="id" label="Card number" onChange={handleChange} />
+					<TextField value={formCustomer.id} type="number" name="id" label="Card number" inputProps={{ readOnly: true }}/>
 				</FormControl>
 				<FormControl fullWidth={true} margin="dense">
 					<TextField value={formCustomer.name} type="text" name="name" label="Name" onChange={handleChange} />
