@@ -1,14 +1,12 @@
 import React, { useRef, useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { reduce, isEmpty } from 'lodash';
-import styled from 'styled-components';
 
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 import { DataGrid, GridToolbarContainer, GridFilterToolbarButton } from '@material-ui/data-grid';
 
-import Badge from '@material-ui/core/Badge';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
@@ -31,6 +29,8 @@ import { FirebaseContext } from '../../context/Firebase';
 
 import BorrowContext from '../../context/Borrow/BorrowContext';
 import { getFormattedDate, dbWritePromise } from '../../utils/functions';
+
+import { StyledBook, StyledCustomer } from './components/StyledEntities';
 
 
 function ReturnedBooksFilter({ checked, handleChange }) {
@@ -91,74 +91,6 @@ const StyledCell = ({ borrow }) => {
 	return <del>{ borrow.value }</del>;
 };
 
-const ContentContainer = styled.div`
-	display: flex;
-	line-height: 1.5;
-	max-width: 100%;
-
-	.badge-container{
-		padding: 0 5px;
-	}
-	.content-container{
-		flex: 1;
-		flex-basis: 0;
-		padding-left: 20px;
-		max-width: 100%;
-		
-		> div{
-			text-overflow: ellipsis;
-			overflow: hidden;
-			
-			> span + .secondary-info:before{
-				content: '-';
-				padding: 0 7px;
-			}
-		}
-		.secondary-info{
-			opacity: 0.5;
-		}
-	}
-`;
-const StyledBook = ({ borrow }) => {
-	if (!borrow.row.bookData) return null;
-	return (
-		<ContentContainer>
-			<div className="badge-container">
-				<Badge badgeContent={borrow.row.bookData.id} color="secondary" max={99999} />
-			</div>
-			<div className="content-container">
-				<div>{borrow.row.bookData.punjabi_title}</div>
-				<div>
-					{borrow.row.bookData.title && (<span>{borrow.row.bookData.title}</span>)}
-					{borrow.row.bookData.author && (
-						<span className="secondary-info">{borrow.row.bookData.author}</span>
-					)}
-				</div>
-			</div>
-		</ContentContainer>
-	);
-};
-
-const StyledCustomer = ({ borrow }) => {
-	if (!borrow.row.customerData) return null;
-	return (
-		<ContentContainer>
-			<div className="badge-container">
-				<Badge badgeContent={borrow.row.customerData.id} color="primary" max={99999} />
-			</div>
-			<div className="content-container">
-				<div>{borrow.row.customerData.name}</div>
-				<div>
-					{borrow.row.customerData.city && (<span>{borrow.row.customerData.city}</span>)}
-					{borrow.row.customerData.phone && (
-						<span className="secondary-info">{borrow.row.customerData.phone}</span>
-					)}
-				</div>
-			</div>
-		</ContentContainer>
-	);
-};
-
 const BorrowsView = () => {
 	const borrowStore = useContext(BorrowContext);
 	const bookStore = useContext(BookContext);
@@ -191,8 +123,8 @@ const BorrowsView = () => {
 		/>
 	);
 	const renderStyledCell = (borrow) => <StyledCell borrow={borrow} />;
-	const renderBook = (borrow) => <StyledBook borrow={borrow} />;
-	const renderCustomer = (borrow) => <StyledCustomer borrow={borrow} />;
+	const renderBook = (borrow) => borrow.row.bookData && <StyledBook book={borrow.row.bookData} />;
+	const renderCustomer = (borrow) => borrow.row.customerData && <StyledCustomer customer={borrow.row.customerData} />;
 	const columns = [
 		{
 			field: 'book',

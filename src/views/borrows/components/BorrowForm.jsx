@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { reduce, isEmpty } from 'lodash';
+import styled from 'styled-components';
 
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import Badge from '@material-ui/core/Badge';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
 import FormControl from '@material-ui/core/FormControl';
@@ -13,7 +15,14 @@ import DrawerHeader from '../../../shared/DrawerHeader';
 import BookContext from '../../../context/Book/BookContext';
 import CustomerContext from '../../../context/Customer/CustomerContext';
 
+import { StyledBook, StyledCustomer } from './StyledEntities';
 import { dbWritePromise } from '../../../utils/functions';
+
+const BookLabel = styled.div`
+	.id {
+		padding: 0 15px;
+	}
+`;
 
 const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 	const [formBorrow, setBorrow] = useState(create ? {
@@ -121,15 +130,8 @@ const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 							}
 						}}
 						options={books}
-						getOptionLabel={(option) => option.id && `${option.id}) ${option.punjabi_title} ${option.title}`}
-						renderOption={(option) => (
-							<React.Fragment>
-								<span>{option.id}</span>
-								{option.punjabi_title}
-								{option.title}
-								{option.author}
-							</React.Fragment>
-						)}
+						getOptionLabel={(option) => option.id ? `${option.id}) ${option.punjabi_title} ${option.title}`: ''}
+						renderOption={(option) => <StyledBook book={option} withPadding />}
 						renderInput={(params) => <TextField {...params} type="text" name="book" label="Book" />}
 					/>
 				</FormControl>
@@ -144,14 +146,8 @@ const BorrowForm = ({ create, borrowId, borrow, goBack }) => {
 							}
 						}}
 						options={customers}
-						getOptionLabel={(option) => option.id && `${option.id}) ${option.name} ${option.city}`}
-						renderOption={(option) => (
-							<React.Fragment>
-								<span>{option.id}</span>
-								{option.name}
-								{option.city}
-							</React.Fragment>
-						)}
+						getOptionLabel={(option) => option.id ? `${option.id}) ${option.name} ${option.city}` : ''}
+						renderOption={(option) => <StyledCustomer customer={option} withPadding />}
 						renderInput={(params) => <TextField {...params} type="text" name="customer" label="Customer" />}
 					/>
 				</FormControl>
